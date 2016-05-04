@@ -139,5 +139,3 @@ def friends_of_friend_ids(user):
 # That is, user Chi has two common friends with user Hero (id 0)
 # and one common friend with user Clive (id 5)
             
-            
-print "Test"
