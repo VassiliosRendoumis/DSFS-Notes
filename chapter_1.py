@@ -5,7 +5,7 @@ Created on Mon May 02 22:13:49 2016
 """
 from __future__ import division
 from collections import Counter, defaultdict
-import itertools as itr
+
 
 users = [
             {"id":0, "name":"Hero"},
@@ -214,7 +214,7 @@ def pretty_printing_users_with_common_interests(user_id):
        common interests, with the given user (user is given via user_id)
     """
 
-    max_common_interests = max([v for k, v in most_common_interests_with(user_id).iteritems()])
+    max_common_interests = max([common_interests for user, common_interests in most_common_interests_with(user_id).iteritems()])
     users_with_max_common_interests = []
     for user, interest_num in most_common_interests_with(user_id).iteritems():
         if interest_num == max_common_interests:
