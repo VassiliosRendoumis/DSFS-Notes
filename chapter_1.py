@@ -209,20 +209,39 @@ def most_common_interests_with(user_id):
 # common interests
 # print max([v for k, v in most_common_interests_with(0).items() ])
 
+
+def max_common_interests(user_id):
+    """Returns the maximum number of common interst given user
+       has with other user(s).
+    """
+    
+    return max([common_interests 
+                for user, common_interests 
+                in most_common_interests_with(user_id).iteritems()])
+                
+
+def users_with_max_common_interests(user_id):
+    """Returns a list with users which have the same maximum
+        number of common intersts with given user (via user_id)
+    """
+    
+    num_of_max_common_intersts = max_common_interests(user_id)
+    
+    return [user 
+            for user, interest_num 
+            in most_common_interests_with(user_id).iteritems() 
+            if interest_num == num_of_max_common_intersts]
+
+              
 def pretty_printing_users_with_common_interests(user_id):
     """Prints out a report providing which user(s) have the maximum number of
        common interests, with the given user (user is given via user_id)
     """
-
-    max_common_interests = max([common_interests for user, common_interests in most_common_interests_with(user_id).iteritems()])
-    users_with_max_common_interests = []
-    for user, interest_num in most_common_interests_with(user_id).iteritems():
-        if interest_num == max_common_interests:
-            users_with_max_common_interests.append(user)
-    print "User", users[user_id]["name"], "has", max_common_interests, \
-          " interest(s) in common with user(s)", \
-          ''.join([''.join([users[_]["name"], ", "]) for _ in users_with_max_common_interests])       
+    
+    print "User", users[user_id]["name"], "has", max_common_interests(user_id), \
+          "interest(s) in common with user(s)", \
+          ''.join([''.join([users[_]["name"], ", "]) 
+                  for _ in users_with_max_common_interests(user_id)])     
     
 
-
-pretty_printing_users_with_common_interests(9)
+pretty_printing_users_with_common_interests(2)
