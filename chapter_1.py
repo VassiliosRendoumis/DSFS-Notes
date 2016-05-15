@@ -5,7 +5,13 @@ Created on Mon May 02 22:13:49 2016
 """
 from __future__ import division
 from collections import Counter, defaultdict
+from matplotlib import pyplot as plt
 
+##########################
+#                        #
+# FINDING KEY CONNECTORS #
+#                        #
+##########################
 
 users = [
             {"id":0, "name":"Hero"},
@@ -90,6 +96,14 @@ average_number_of_connections = total_connections / len(users)
 
 # Hence, the average number of connections is:
 #print average_number_of_connections
+
+
+################################
+#                              #
+# DATA SCIENTISTS YOU MAY KNOW #
+#                              #
+################################
+
 
 # Let's find the most connected people and add them in a list
 
@@ -243,5 +257,155 @@ def pretty_printing_users_with_common_interests(user_id):
           ''.join([''.join([users[_]["name"], ", "]) 
                   for _ in users_with_max_common_interests(user_id)])     
     
+# Let's check how many users have a maximum number of interests with user Sue
+# and list them
+# pretty_printing_users_with_common_interests(2)
+    
+    
+    
+###########################
+#                         #
+# SALARIES AND EXPERIENCE #
+#                         #
+###########################
+    
+    
+salaries_and_tenures = [(83000, 8.7), (88000, 8.1),
+                        (48000, 0.7), (76000, 6),
+                        (69000, 6.5), (76000, 7.5),
+                        (60000, 2.5), (83000, 10),
+                        (48000, 1.9), (63000, 4.2)]
 
-pretty_printing_users_with_common_interests(2)
+# Let's plot the salaries_and_tenures data in a scatter plot.
+
+def scatter_plot_pair_list(some_pair_list, 
+                   x_label = "xlabel", y_label = "ylabel", 
+                   title = "Title"):
+    """A helper function which plots a given list of pairs values with 
+       some labels and title.
+    """
+    
+    plt.scatter([_[1] for _ in some_pair_list], [_[0] for _ in some_pair_list])
+    plt.title(title)
+    plt.xlabel(x_label)
+    plt.ylabel(y_label)
+
+# scatter_plot_pair_list(salaries_and_tenures, "Years of Experience", "Salary", "Salary by years of Experience")
+
+# It seems a generic pattern exists: Salary(Tenure) ~ Tenure
+
+# Let's create naive indexing of the salaries for each tenure
+salary_by_tenure = defaultdict(list)
+
+for salary, tenure in salaries_and_tenures:
+    salary_by_tenure[tenure].append(salary)
+    
+# keys are years, each value is average salary for that tenure
+# We use here iteritems, since it is more efficient in python 2
+average_salary_by_tenure = {tenure:sum(salaries)/len(salaries)
+                            for tenure, salaries in salary_by_tenure.iteritems()}
+
+#print average_salary_by_tenure
+# This is not very usefull since none of the users have the same tenure
+
+# Let's create a bucket of tenures, that is some range of tenure values and
+# vs the salaries in this range
+def tenure_bucket(tenure):
+    if tenure < 2:
+        return "less than two"
+    elif tenure < 5:
+        return "between two and five"
+    else:
+        return "more than five"
+        
+# Let's group together the salarie corresponding to each bucket:
+# Keys are tenure buckets, values are lists of salaries for that bucket
+salary_by_tenure_bucket = defaultdict(list)
+
+for salary, tenure in salaries_and_tenures:
+    bucket = tenure_bucket(tenure)
+    salary_by_tenure_bucket[bucket].append(salary)
+    
+# Finally, let's compute the average salary for each group:
+average_salary_by_bucket = {tenure_bucket:sum(salaries)/len(salaries) 
+                            for tenure_bucket, salaries 
+                            in salary_by_tenure_bucket.iteritems()}
+                            
+#print average_salary_by_bucket
+
+#################
+#               #
+# PAID_ACCOUNTS #
+#               #
+#################
+
+account_payment_vs_tenure = {
+                             0.7:"paid",
+                             1.9:"unpaid",
+                             2.5:"paid",
+                             4.2:"unpaid",
+                             6:"unpaid",
+                             6.5:"unpaid",
+                             7.5:"unpaid",
+                             8.1:"unpaid",
+                             8.7:"paid",
+                             10:"paid"
+                             }
+                             
+                                
+# General naive pattern: Users with very little or with many years of 
+# experience, pay their account, while users with average amount of experience
+# don't. 
+                                
+def predict_apid_or_unpaid(years_of_experience):
+    if years_of_experience < 3.0:
+        return "paid"
+    elif years_of_experience < 8.5:
+        return "unpaid"
+    else:
+        return "paid"
+
+######################
+#                    #
+# TOPICS OF INTEREST #
+#                    #
+######################
+
+# We can look for the most popular interests, simply by counting the words in
+# our interests list. However, the names of this list could be altered a little
+# bit in order to avoid missbehavior with interests which are made up of two
+# separate words, like decision trees. We could change that by replacing the
+# space betwwen the words with a minus (-) sign. We know though, that all
+# interests have only one space at most and no one at minimum.
+
+# Due to the fact that our list of interests is a list of tupples, we can't
+# alter the string entry in this tupple. Instead we will crate a new list
+# of interests with the interest syntax we want.
+
+
+interests_v1 = []
+
+for _ in interests:
+    if " " in _[1]: # if the interest includes a space
+        space_index = _[1].index(" ") # get the index of this space
+        interests_v1.append((_[0], 
+                            ''.join([_[1][:space_index], "-", _[1][space_index + 1:]
+                                    ])
+                             )) # add a tupple to the new list by substituting
+                                # the string part with correct syntax (no spaces)
+                             
+    else: # if no space is found, just add the tupple as it is
+        interests_v1.append(_)
+        
+# Now we can count the words. We will use a slightly different approach 
+# then the original code of the book uses, since we don't have any spaces now.
+# We will use our new interests_v1 list of interests.
+
+
+words_and_counts = Counter(interest.lower() for user, interest in interests_v1)                           
+        
+        
+# This make it easy to list out words that accur more than once:
+for word, count in words_and_counts.most_common():
+    if count > 1:
+        print word, count
