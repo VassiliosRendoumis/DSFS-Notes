@@ -339,18 +339,18 @@ average_salary_by_bucket = {tenure_bucket:sum(salaries)/len(salaries)
 #               #
 #################
 
-account_payment_vs_tenure = {
-                             0.7:"paid",
-                             1.9:"unpaid",
-                             2.5:"paid",
-                             4.2:"unpaid",
-                             6:"unpaid",
-                             6.5:"unpaid",
-                             7.5:"unpaid",
-                             8.1:"unpaid",
-                             8.7:"paid",
-                             10:"paid"
-                             }
+account_payment_vs_tenure = [
+                             (0.7, "paid"),
+                             (1.9, "unpaid"),
+                             (2.5, "paid"),
+                             (4.2, "unpaid"),
+                             (6, "unpaid"),
+                             (6.5, "unpaid"),
+                             (7.5, "unpaid"),
+                             (8.1, "unpaid"),
+                             (8.7, "paid"),
+                             (10, "paid")
+                             ]
                              
                                 
 # General naive pattern: Users with very little or with many years of 
@@ -375,37 +375,82 @@ def predict_apid_or_unpaid(years_of_experience):
 # our interests list. However, the names of this list could be altered a little
 # bit in order to avoid missbehavior with interests which are made up of two
 # separate words, like decision trees. We could change that by replacing the
-# space betwwen the words with a minus (-) sign. We know though, that all
+# space between the words with a minus (-) sign. We know though, that all
 # interests have only one space at most and no one at minimum.
 
-# Due to the fact that our list of interests is a list of tupples, we can't
+# Due to the fact that our list of interests is a list of tuples, we can't
 # alter the string entry in this tupple. Instead we will crate a new list
 # of interests with the interest syntax we want.
 
+def cleans_interests_v1(list_of_interest):
+    """Input is a list of pair tuples with first part the user id (int) 
+       and second part a string (interest). It returns a similar data structure
+       with only difference the substituion of spaces in the string part with
+       the minus sign (-).
+    """
+    interests_v1 = []
 
-interests_v1 = []
-
-for _ in interests:
-    if " " in _[1]: # if the interest includes a space
-        space_index = _[1].index(" ") # get the index of this space
-        interests_v1.append((_[0], 
-                            ''.join([_[1][:space_index], "-", _[1][space_index + 1:]
+    for _ in interests:
+        if " " in _[1]: # if the interest includes a space
+            space_index = _[1].index(" ") # get the index of this space
+            interests_v1.append((_[0], 
+                               ''.join([_[1][:space_index], "-", _[1][space_index + 1:]
                                     ])
-                             )) # add a tupple to the new list by substituting
-                                # the string part with correct syntax (no spaces)
+                                    )) # add a tuple to the new list by substituting
+                                       # the string part with correct syntax (no spaces)
                              
-    else: # if no space is found, just add the tupple as it is
-        interests_v1.append(_)
+        else: # if no space is found, just add the tupple as it is
+            interests_v1.append(_)
+    return interests_v1
+
+# Another way is to create a mechanism which removes the interests in question
+# and adds the correct format, like so:
+
+def cleans_interests_v2(list_of_interest):
+    """Input is a list of pair tuples with first part the user id (int) 
+       and second part a string (interest). It returns the initial list of 
+       interests similar with only difference the substituion of spaces
+       in the string part with the minus sign (-).
+    """
+    for _ in list_of_interest:  
+        temp_list = []       # a temporary list of tupples we change
+        indexes_to_dump = [] # a list of list indexes of the tuples we want to change
         
+        if " " in _[1]:      # if the interest includes a space
+        
+            indexes_to_dump.append(list_of_interest.index(_))
+            
+            space_index = _[1].index(" ") # get the index of this space
+            
+            new_tupple = (_[0], ''.join([_[1][:space_index], "-", _[1][space_index + 1:]])) 
+            
+            temp_list.append(new_tupple) # add a tupple to the interests list by substituting
+                                         # the string part with correct syntax (no spaces)
+        else:
+            pass                         # if there is nothing to change, just pass
+            
+        for _ in indexes_to_dump:        # for every index in our index list
+        
+            del list_of_interest[_]      # delete this tupple from the interests list
+            
+        list_of_interest = list_of_interest + temp_list # concatenate the reduced interests list
+                                                        # and the list of altered tuples
+    return list_of_interest  
+      
 # Now we can count the words. We will use a slightly different approach 
 # then the original code of the book uses, since we don't have any spaces now.
-# We will use our new interests_v1 list of interests.
+# We will use our new list created by our helper function cleans_interests_v1.
 
+words_and_counts_v1 = Counter(interest.lower() for user, interest in cleans_interests_v1(interests))                           
 
-words_and_counts = Counter(interest.lower() for user, interest in interests_v1)                           
-        
-        
-# This make it easy to list out words that accur more than once:
-for word, count in words_and_counts.most_common():
+words_and_counts_v2 = Counter(interest.lower() for user, interest in cleans_interests_v2(interests))
+                        
+# We can see that both implementations of our helper function yield the same
+# words and counts dictionaries    
+                        
+# This make it easy to list out words that accur more than once.
+# Let's use just the words_and_counts_v1:
+for word, count in words_and_counts_v1.most_common():
     if count > 1:
         print word, count
+        
